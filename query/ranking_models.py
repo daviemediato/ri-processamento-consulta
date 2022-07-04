@@ -21,6 +21,25 @@ class IndexPreComputedVals():
         """
         self.document_norm = {}
         self.doc_count = self.index.document_count
+        self.calculate_norm()
+
+    def calculate_norm(self):
+        for document_id in self.index.set_documents:
+            norm_list = []
+            norm = 0
+
+            for word in self.index.vocabulary:
+                for term in self.index.get_occurrence_list(word):
+                    if term.doc_id == document_id:
+                        tf_idf = VectorRankingModel.tf_idf(
+                            self.doc_count, term.term_freq,
+                            self.index.document_count_with_term(word))
+                        tf_idf_pow = math.pow(tf_idf, 2)
+                        norm_list.append(tf_idf_pow)
+
+            norm_list_sum = sum(norm_list)
+            norm = math.sqrt(norm_list_sum)
+            self.document_norm[document_id] = norm
 
 
 class RankingModel():
