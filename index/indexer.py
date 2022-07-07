@@ -32,10 +32,11 @@ class Cleaner:
     @staticmethod
     def read_stop_words(str_file) -> set:
         set_stop_words = set()
-        with open(str_file, encoding='utf-8') as stop_words_file:
-            for line in stop_words_file:
-                arr_words = line.split(",")
-                [set_stop_words.add(word) for word in arr_words]
+        if(os.path.exists(str_file)):
+            with open(str_file, encoding='utf-8') as stop_words_file:
+                for line in stop_words_file:
+                    arr_words = line.split(",")
+                    [set_stop_words.add(word) for word in arr_words]
         return set_stop_words
 
     def is_stop_word(self, term: str):
