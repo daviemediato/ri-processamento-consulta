@@ -141,16 +141,16 @@ class VectorRankingModel(RankingModel):
     ) -> (List[int], Mapping[int, float]):
         documents_weight = {}
 
-        for doc_key, doc_list in docs_occur_per_term.items():
+        for term_key, doc_list in docs_occur_per_term.items():
+            wiq = VectorRankingModel.tf_idf(
+                            self.idx_pre_comp_vals.doc_count,
+                            query[term_key].term_freq, len(doc_list))
             for doc_term in doc_list:
-                for query_key, query_term in query.items():
-                    if doc_term.term_id == query_term.term_id:
+                #for query_key, query_term in query.items():
+                    if doc_term.term_id == query[term_key].term_id:
                         wij = VectorRankingModel.tf_idf(
                             self.idx_pre_comp_vals.doc_count,
                             doc_term.term_freq, len(doc_list))
-                        wiq = VectorRankingModel.tf_idf(
-                            self.idx_pre_comp_vals.doc_count,
-                            query_term.term_freq, len(doc_list))
                         if doc_term.doc_id not in documents_weight:
                             documents_weight[doc_term.doc_id] = wij * wiq
                         else:
