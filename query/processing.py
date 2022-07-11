@@ -73,7 +73,9 @@ class QueryRunner:
 			Retorna dicionario a lista de ocorrencia no indice de cada termo passado como parametro.
 			Caso o termo nao exista, este termo possuirá uma lista vazia
 		"""
-
+		dic_terms = {}
+		for term in terms:
+			dic_terms[term] = self.index.get_occurrence_list(term)
 
 
 		return dic_terms
