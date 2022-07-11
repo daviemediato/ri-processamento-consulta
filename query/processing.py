@@ -85,14 +85,18 @@ class QueryRunner:
 			usando o modelo especificado pelo atributo ranking_model
 		"""
 		# Obtenha, para cada termo da consulta, sua ocorrencia por meio do método get_query_term_occurence
-		dic_query_occur = None
-
+		dic_query_occur = self.get_query_term_occurence(query)
+		print('teste', list(dic_query_occur))
 		# obtenha a lista de ocorrencia dos termos da consulta
-		dic_occur_per_term_query = None
-
+		dic_occur_per_term_query = {}
+		term = []
+		if(len(dic_query_occur) > 0):
+			term = list(dic_query_occur)
+		dic_occur_per_term_query = self.get_occurrence_list_per_term(term)	
 
 		# utilize o ranking_model para retornar o documentos ordenados considrando dic_query_occur e dic_occur_per_term_query
-		return None
+		sorted_documents = self.ranking_model.get_ordered_docs(dic_query_occur,dic_occur_per_term_query)
+		return sorted_documents
 
 	@staticmethod
 	def runQuery(query:str, indice:Index, indice_pre_computado:IndexPreComputedVals , map_relevantes:Mapping[str,Set[int]]):
