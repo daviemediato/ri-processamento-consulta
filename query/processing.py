@@ -33,7 +33,13 @@ class QueryRunner:
 		"""
 		# print(f"Respostas: {respostas} doc_relevantes: {doc_relevantes}")
 		relevance_count = 0
-
+		size = len(respostas)
+		if n > size:
+			n = size
+		if respostas is not None:
+			for i in range(n):
+				if respostas[i] in doc_relevantes:
+					relevance_count += 1
 		return relevance_count
 
 	def compute_precision_recall(self, n: int, lst_docs: List[int], relevant_docs: Set[int]) -> (float, float):
