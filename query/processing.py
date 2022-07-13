@@ -1,7 +1,7 @@
 from typing import List, Set, Mapping
 from nltk.tokenize import word_tokenize
 from util.time import CheckTime
-from query.ranking_models import RankingModel, VectorRankingModel, IndexPreComputedVals
+from query.ranking_models import BooleanRankingModel, RankingModel, VectorRankingModel, IndexPreComputedVals, OPERATOR
 from index.structure import Index, TermOccurrence
 from index.indexer import Cleaner
 
@@ -99,7 +99,7 @@ class QueryRunner:
 		return sorted_documents
 
 	@staticmethod
-	def runQuery(query:str, indice:Index, indice_pre_computado:IndexPreComputedVals , map_relevantes:Mapping[str,Set[int]]):
+	def runQuery(query:str, indice:Index, ranking_model: RankingModel, indice_pre_computado:IndexPreComputedVals , map_relevantes:Mapping[str,Set[int]]):
 		"""
 			Para um daterminada consulta `query` é extraído do indice `index` os documentos mais relevantes, considerando 
 			um modelo informado pelo usuário. O `indice_pre_computado` possui valores précalculados que auxiliarão na tarefa. 
@@ -112,17 +112,21 @@ class QueryRunner:
 		# PEça para usuario selecionar entre Booleano ou modelo vetorial para intanciar o QueryRunner
 		# apropriadamente. NO caso do booleano, vc deve pedir ao usuario se será um "and" ou "or" entre os termos.
 		# abaixo, existem exemplos fixos.
-		qr = QueryRunner(indice, VectorRankingModel(indice_pre_computado))
+		qr = QueryRunner(indice, ranking_model(indice_pre_computado))
 		time_checker.print_delta("Query Creation")
 
 
 		# Utilize o método get_docs_term para obter a lista de documentos que responde esta consulta
-		resposta = None
+		docs = qr.get_docs_term(query)
+		respostas = None
 		time_checker.print_delta("anwered with {len(respostas)} docs")
 
-		# nesse if, vc irá verificar se o termo possui documentos relevantes associados a ele
+		# nesse if, vc irá verificar se a query existe no hashmap de documentos relevantes (leve processamento)
 		# se possuir, vc deverá calcular a Precisao e revocação nos top 5, 10, 20, 50.
 		# O for que fiz abaixo é só uma sugestao e o metododo countTopNRelevants podera auxiliar no calculo da revocacao e precisao
+		# obtem o hash map
+		# faz as conversoes 
+
 		if(True):
 			arr_top = [5,10,20,50]
 			revocacao = 0
@@ -135,20 +139,46 @@ class QueryRunner:
 
 		# imprima aas top 10 respostas
 
+	def open_index_by_path(path) -> Index:
+		# TODO: Abrir index e retorna-lo
+		pass
+
 	@staticmethod
-	def main():
-		# leia o indice (base da dados fornecida)
+	def main(ranking_identifier, ranking_operator_identifier, index_path):
+		
+		# TODO: Alterar para input ser um dict contendo esses parametros como chave
+		ranking_model = None
+		operator = None
 		index = None
+		
+		if(ranking_operator_identifier):
+			operator = ranking_operator_identifier
+		else:
+			raise Exception("Necessario parametro ranking_operator_identifier")
+		if(ranking_identifier):
+			if(ranking_identifier is "vector"):
+				ranking_model = VectorRankingModel(operator)
+			elif(ranking_identifier is "boolean"):
+				ranking_model = BooleanRankingModel(operator)
+		else:
+			raise Exception("Necessario parametro ranking_identifier")
+			
+	
+		# leia o indice (base da dados fornecida)
+		if(index_path):			
+			index = QueryRunner.open_index_by_path(index_path)
+		else:
+			raise Exception("Necessario parametro index_path")
+
 
 		# Checagem se existe um documento (apenas para teste, deveria existir)
-		print(f"Existe o doc? index.hasDocId(105047)")
+		print(f"Existe o docId? 105047: {index.hasDocId(105047)}")
 
-		# Instancie o IndicePreCompModelo para pr ecomputar os valores necessarios para a query
-		print("Precomputando valores atraves do indice...");
+		# Instancie o IndexPreComputedVals para pre-computar os valores necessarios para a query
+		print("Precomputando valores atraves do indice...")
 		check_time = CheckTime()
 		
-
-
+		index_pre_computed = IndexPreComputedVals(index)
 
 		check_time.print_delta("Precomputou valores")
 
@@ -157,5 +187,5 @@ class QueryRunner:
 		
 		print("Fazendo query...")
 		# aquui, peça para o usuário uma query (voce pode deixar isso num while ou fazer um interface grafica se estiver bastante animado ;)
-		query = "São Paulo";
-		runQuery(query,idx, idxPreCom,mapRelevances);
+		query = "São Paulo"
+		QueryRunner.runQuery(query,index, ranking_model, index_pre_computed,map_relevance)
